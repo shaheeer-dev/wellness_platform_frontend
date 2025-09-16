@@ -216,9 +216,15 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({ selectedClient, onA
           appointmentType={appointmentToCancel.attributes.appointment_type}
           clientName={(() => {
             if (selectedClient) return selectedClient.attributes.name;
-            return 'Unknown Client';
+            const notes = appointmentToCancel.attributes.notes;
+            if (notes && notes.includes('for ')) {
+              const match = notes.match(/for ([A-Za-z\s]+)$/);
+              if (match) return match[1].trim();
+            }
+            return 'Client';
           })()}
-          scheduledAt={format(parseISO(appointmentToCancel.attributes.scheduled_at), 'PPP \\a\\t p')}
+          scheduledAt={appointmentToCancel.attributes.scheduled_at_formatted || 
+                      format(parseISO(appointmentToCancel.attributes.scheduled_at), 'PPP \\a\\t p')}
           onConfirm={confirmCancelAppointment}
           onCancel={handleModalCancel}
         />

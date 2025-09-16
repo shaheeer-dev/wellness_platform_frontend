@@ -14,6 +14,7 @@ export interface Appointment {
   attributes: {
     appointment_type: string;
     scheduled_at: string;
+    scheduled_at_formatted?: string;
     status: 'scheduled' | 'completed' | 'cancelled';
     notes?: string;
     external_id: string;
