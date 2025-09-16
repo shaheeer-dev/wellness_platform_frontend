@@ -4,7 +4,6 @@ import { appointmentsApi } from '../services/api';
 import { APPOINTMENT_TYPES, generateTimeSlots, DEFAULT_FORM_VALUES } from '../constants';
 import { getDefaultScheduledDate, getTodayFormatted, combineDateTimeToISO } from '../utils/dateHelpers';
 import { useClients, useAsyncOperation } from '../hooks';
-import { toast } from 'react-toastify';
 import './AppointmentForm.css';
 
 const AppointmentForm: React.FC<AppointmentFormProps> = ({
