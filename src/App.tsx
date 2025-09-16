@@ -19,7 +19,7 @@ function App() {
   };
 
   const handleAppointmentCreated = () => {
-    handleRefresh();
+    setRefreshKey(prev => prev + 1);
     setShowAppointmentForm(false);
   };
 
@@ -56,7 +56,6 @@ function App() {
         <div className="main-content">
           <div className="sidebar">
             <ClientList
-              key={`clients-${refreshKey}`}
               onClientSelect={handleClientSelect}
               selectedClient={selectedClient}
             />
