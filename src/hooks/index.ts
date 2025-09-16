@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Client } from '../types';
 import { clientsApi } from '../services/api';
 
@@ -35,7 +35,7 @@ export const useClients = (selectedClient?: Client | null) => {
   const [clients, setClients] = useState<Client[]>([]);
   const { loading, error, executeAsync } = useAsyncOperation();
 
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     const result = await executeAsync(
       () => clientsApi.getClients(),
       'Failed to fetch clients'
@@ -44,13 +44,13 @@ export const useClients = (selectedClient?: Client | null) => {
     if (result) {
       setClients(result.data);
     }
-  };
+  }, [executeAsync]);
 
   useEffect(() => {
     if (!selectedClient) {
       fetchClients();
     }
-  }, [selectedClient]);
+  }, [selectedClient, fetchClients]);
 
   return {
     clients,

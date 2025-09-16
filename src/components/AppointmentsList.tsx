@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { format, parseISO, isFuture } from 'date-fns';
 import { Appointment, Client } from '../types';
 import { appointmentsApi } from '../services/api';
@@ -15,11 +15,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({ selectedClient, onA
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'completed' | 'cancelled'>('all');
 
-  useEffect(() => {
-    fetchAppointments();
-  }, [filter]); // fetchAppointments is stable since it's defined inline
-
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -39,7 +35,11 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({ selectedClient, onA
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
 
   const handleStatusUpdate = async (appointmentId: string, newStatus: 'completed' | 'cancelled') => {
     try {

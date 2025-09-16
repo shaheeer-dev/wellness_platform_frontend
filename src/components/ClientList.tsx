@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Client } from '../types';
 import { clientsApi } from '../services/api';
 import './ClientList.css';
@@ -14,11 +14,7 @@ const ClientList: React.FC<ClientListProps> = ({ onClientSelect, selectedClient 
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    fetchClients();
-  }, [search]); // fetchClients is stable since it's defined inline
-
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -30,7 +26,11 @@ const ClientList: React.FC<ClientListProps> = ({ onClientSelect, selectedClient 
     } finally {
       setLoading(false);
     }
-  };
+  }, [search]);
+
+  useEffect(() => {
+    fetchClients();
+  }, [fetchClients]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
