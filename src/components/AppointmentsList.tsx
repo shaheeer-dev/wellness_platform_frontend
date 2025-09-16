@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { format, parseISO, isFuture } from 'date-fns';
 import { Appointment, Client } from '../types';
 import { appointmentsApi } from '../services/api';
+import CancelAppointmentModal from './CancelAppointmentModal';
+import { toast } from 'react-toastify';
 import './AppointmentsList.css';
 
 interface AppointmentsListProps {
@@ -14,6 +16,8 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({ selectedClient, onA
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'completed' | 'cancelled'>('all');
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [appointmentToCancel, setAppointmentToCancel] = useState<Appointment | null>(null);
 
   const fetchAppointments = useCallback(async () => {
     try {
@@ -46,23 +50,37 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({ selectedClient, onA
       await appointmentsApi.updateAppointment(appointmentId, { status: newStatus });
       fetchAppointments(); // Refresh the list
       onAppointmentUpdate?.();
+      toast.success(`Appointment marked as ${newStatus}!`);
     } catch (err: any) {
       console.error('Error updating appointment:', err);
-      alert('Failed to update appointment status');
+      toast.error('Failed to update appointment status');
     }
   };
 
-  const handleCancelAppointment = async (appointmentId: string) => {
-    if (window.confirm('Are you sure you want to cancel this appointment?')) {
-      try {
-        await appointmentsApi.cancelAppointment(appointmentId);
-        fetchAppointments(); // Refresh the list
-        onAppointmentUpdate?.();
-      } catch (err: any) {
-        console.error('Error cancelling appointment:', err);
-        alert('Failed to cancel appointment');
-      }
+  const handleCancelAppointment = (appointment: Appointment) => {
+    setAppointmentToCancel(appointment);
+    setShowCancelModal(true);
+  };
+
+  const confirmCancelAppointment = async (reason?: string) => {
+    if (!appointmentToCancel) return;
+    
+    try {
+      await appointmentsApi.cancelAppointment(appointmentToCancel.id);
+      fetchAppointments(); // Refresh the list
+      onAppointmentUpdate?.();
+      setShowCancelModal(false);
+      setAppointmentToCancel(null);
+      toast.success('Appointment cancelled successfully!');
+    } catch (err: any) {
+      console.error('Error cancelling appointment:', err);
+      toast.error('Failed to cancel appointment');
     }
+  };
+
+  const handleModalCancel = () => {
+    setShowCancelModal(false);
+    setAppointmentToCancel(null);
   };
 
   const getStatusColor = (status: string, scheduledAt: string) => {
@@ -171,7 +189,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({ selectedClient, onA
                 )}
               </div>
 
-              {appointment.attributes.status === 'scheduled' && (
+              {appointment.attributes.status === 'scheduled' && isFuture(scheduledDate) && (
                 <div className="appointment-actions">
                   <button
                     onClick={() => handleStatusUpdate(appointment.id, 'completed')}
@@ -180,7 +198,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({ selectedClient, onA
                     Mark Complete
                   </button>
                   <button
-                    onClick={() => handleCancelAppointment(appointment.id)}
+                    onClick={() => handleCancelAppointment(appointment)}
                     className="action-button cancel-button"
                   >
                     Cancel
@@ -191,6 +209,20 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({ selectedClient, onA
           );
         })}
       </div>
+      
+      {appointmentToCancel && (
+        <CancelAppointmentModal
+          isOpen={showCancelModal}
+          appointmentType={appointmentToCancel.attributes.appointment_type}
+          clientName={(() => {
+            if (selectedClient) return selectedClient.attributes.name;
+            return 'Unknown Client';
+          })()
+          scheduledAt={format(parseISO(appointmentToCancel.attributes.scheduled_at), 'PPP \\a\\t p')}
+          onConfirm={confirmCancelAppointment}
+          onCancel={handleModalCancel}
+        />
+      )}
     </div>
   );
 };

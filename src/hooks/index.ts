@@ -59,3 +59,4 @@ export const useClients = (selectedClient?: Client | null) => {
     refetch: fetchClients
   };
 };
+

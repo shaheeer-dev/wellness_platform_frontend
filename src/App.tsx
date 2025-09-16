@@ -3,6 +3,8 @@ import { Client } from './types';
 import ClientList from './components/ClientList';
 import AppointmentsList from './components/AppointmentsList';
 import AppointmentForm from './components/AppointmentForm';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
 function App() {
@@ -21,6 +23,7 @@ function App() {
   const handleAppointmentCreated = () => {
     setRefreshKey(prev => prev + 1);
     setShowAppointmentForm(false);
+    toast.success('Appointment scheduled successfully!');
   };
 
 
@@ -70,6 +73,19 @@ function App() {
           </div>
         </div>
       </main>
+      
+      <ToastContainer 
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 }
